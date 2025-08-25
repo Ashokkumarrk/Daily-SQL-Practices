@@ -97,3 +97,83 @@ SELECT * from employees where hire_date >= '2018-01-10';
 SELECT * from employees where MONTH(hire_date) >= '7';
 SELECT hire_date,day(hire_date),month(hire_date),year(hire_date) from employees;
 SELECT * from employees where dayname(hire_date) ='tuesday';
+
+-- TASKS
+
+use companydb
+select * from co_employees
+show tables;
+select * from departments
+select * from employees
+select * from employee_project
+select * from projects 
+
+-- project name of each employee and role
+
+SELECT concat(e.first_name, e.last_name), p.project_name
+FROM employees e
+JOIN employee_project ep ON e.emp_id = ep.emp_id
+JOIN projects p ON ep.project_id = p.project_id;
+
+-- get department wise employee count
+
+select d.dept_name ,count(e.first_name) as employee_count from employees e 
+ JOIN departments d ON e.dept_id = d.dept_id GROUP BY d.dept_name;
+
+ -- show each projects with its  budget and total salaries of employees assigned.
+
+ select p.project_name,p.budget,sum(e.salary) from employees e join 
+ employee_project ep on e.emp_id = ep.emp_id 
+ join projects p on p.project_id= ep.project_id GROUP BY p.project_name,p.budget;
+
+ -- find employees whose department is the same as their manager's department.
+
+ select concat(first_name,'',last_name),role from employees e join departments d on e.dept_id = d.dept_id join employee_project ep ON ep.emp_id = e.emp_id where role = 'manager';
+
+-- List employees who are not working on any project.
+
+select concat(e.first_name,'',e.last_name),e.emp_id from employees e join 
+employee_project ep on e.emp_id = ep.emp_id
+where ep.project_id is NULL;   --- All Person are Working in Project
+
+--Learning WINDOWS function
+ -- partition,over (),first_value,last_value,aggregated,order by its all used.
+
+select dept_id,avg(salary) from employees group by dept_id;
+select emp_id ,concat (first_name,'',last_name),dept_id,salary,avg(salary) over (PARTITION BY dept_id)   from employees;
+select group_concat(first_name) ,dept_id, avg(salary) from employees group by dept_id;
+select emp_id,concat(first_name,'',last_name),dept_id,salary,hire_date,sum(salary) over (partition BY dept_id ORDER BY  hire_date) as sum_salary from employees;
+select emp_id,concat(first_name,'',last_name),dept_id,salary,hire_date,max(salary) over (ORDER BY hire_date) as max_salry,min(salary) over (ORDER BY hire_date) as min_salary   from employees;
+select emp_id,concat(first_name,'',last_name),dept_id,salary,hire_date,salary-lag(salary) over (ORDER BY hire_date) as lag_salry from employees;
+select emp_id,concat(first_name,'',last_name),dept_id,salary,hire_date,LEAD(salary) over (ORDER BY hire_date) as lead_salry from employees;
+select emp_id,concat(first_name,'',last_name),dept_id,salary,hire_date,FIRST_VALUE(salary) over (ORDER BY salary) as firstvalue from employees;
+select emp_id,concat(first_name,'',last_name),dept_id,salary,hire_date,LAST_VALUE(salary) over (ORDER BY salary) as lastvalue from employees;
+
+
+ --- rank()
+ -- rank_dense()
+ --row_number()  the steps finded and used in windows functions:
+
+ select emp_id,concat(first_name,'',last_name),dept_id,salary,hire_date,rank() OVER (ORDER BY salary) from employees; 
+ select * from employees;
+insert into employees VALUES
+(7,'Ashok','kumar',1,60000.00,'2015-04-15',3);
+ select emp_id,concat(first_name,'',last_name),dept_id,salary,hire_date,dense_rank() OVER (ORDER BY salary) from employees;
+ select emp_id,concat(first_name,'',last_name),dept_id,salary,hire_date,ROW_NUMBER() OVER (ORDER BY salary) from employees;
+
+--using Cases:
+
+select emp_id,salary,
+CASE
+    when salary > 60000.00 then "HIGH"
+    when salary between 40000.00 and 60000.00 then "medium"
+else "low"
+end as differnce from employees;
+
+select first_name,emp_id ,salary,
+case 
+     when emp_id = 1  then 70000.00
+    when  emp_id = 2 then 40000.00
+     when emp_id =3 then 50000.00
+end as bonus 
+from employees;
